@@ -92,8 +92,8 @@ class Blockchain{
         let blockData = JSON.parse(res);
         if (typeof blockData.body.address == "undefined") return blockData;
         else {
-          let story = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
-          blockData.body.star.story = story;
+          let storyDecoded = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
+          blockData.body.star.storyDecoded = storyDecoded;
           return blockData;
         }
           
@@ -112,8 +112,8 @@ class Blockchain{
         let blockData = JSON.parse(data.value);
         if (typeof blockData.body.address == "undefined") return;
         if (blockData.body.address == address) {
-          let story = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
-          blockData.body.star.story = story;
+          let storyDecoded = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
+          blockData.body.star.storyDecoded = storyDecoded;
           stars.push(blockData);
         }
       })
@@ -132,8 +132,8 @@ class Blockchain{
       .on('data', function(data) {
         let blockData = JSON.parse(data.value);
         if (blockData.hash == hash) {
-          let story = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
-          blockData.body.star.story = story;
+          let storyDecoded = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
+          blockData.body.star.storyDecoded = storyDecoded;
           resolve(blockData);
         }
       })

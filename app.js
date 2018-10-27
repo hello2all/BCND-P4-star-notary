@@ -41,9 +41,12 @@ app.get('/stars/hash::hash', (req, res, next) => {
 
 app.post('/block', (req, res, next) => {
     try {
-        if (!notary.isVerified())
+        if (!notary.isVerified(req.body.address)) throw new Error("Address is not validated or validation has been expired");
         if (!req.body.address) throw new Error("Address is not provided");
         if (!req.body.star) throw new Error("Star Details are not provided");
+        if (!req.body.star.dec) throw new Error("Star dec is not provided");
+        if (!req.body.star.ra) throw new Error("Star ra is not provided");
+        if (!req.body.star.story) throw new Error("Star story is not provided");
         if (!/^[\x00-\x7F]*$/.test(req.body.star.story)) throw new Error("Star story only supports ASCII text");
         let story = new Buffer(req.body.star.story).toString('hex');
         if (story.length > 500) throw new Error("Start story exceeds maximum limit of 500 bytes");
@@ -56,7 +59,9 @@ app.post('/block', (req, res, next) => {
 
         bc.addBlock(new Block(blockData))
         .then(block => {
+            console.log(notary.openValidations, '++')
             notary.clearValidation(req.body.address);
+            console.log(notary.openValidations, '++')
             res.json(block);
         })
         .catch(err => {
@@ -72,7 +77,7 @@ app.post('/requestValidation', (req, res, next) => {
         let validationRequest = notary.registerValidationRequest(req.body.address);
         res.json({
             address: req.body.address,
-            requestTimeStamp: notary.now(),
+            requestTimeStamp: validationRequest.requestTimeStamp,
             message: validationRequest.message,
             validationWindow: validationRequest.expireTime - notary.now()
         });
@@ -96,8 +101,8 @@ app.post('/message-signature/validate', (req, res, next) => {
                 registerStar: true,
                 status: {
                     address: req.body.address,
-                    requestTimeStamp: notary.now().toString(),
-                    message: "",
+                    requestTimeStamp: isRegistered.requestTimeStamp,
+                    message: isRegistered.message,
                     validationWindow: isRegistered.validationWindow,
                     messageSignature: "valid"
                 }

@@ -9,7 +9,8 @@ class Notary {
     registerValidationRequest (address) {
         // if address already exist and not yet expired
         if(typeof this.openValidations[address] != "undefined") {
-            if (this.openValidations[address].expireTime < this.now()) {
+            console.log(this.openValidations[address].expireTime, this.now())
+            if (this.openValidations[address].expireTime > this.now()) {
                 return this.openValidations[address];
             }
         }
@@ -17,7 +18,9 @@ class Notary {
         // if address does not exist or registered request expired
         let validationRequest = {
             message: this.getValidationMsg(address, this.now()),
+            requestTimeStamp: this.now(),
             expireTime: this.now() + this.validationWindow,
+            verified: false
         };
         this.openValidations[address] = validationRequest;
         return validationRequest;
@@ -39,6 +42,8 @@ class Notary {
         else {
             return {
                 status: true,
+                requestTimeStamp: this.openValidations[address].requestTimeStamp,
+                message: this.openValidations[address].message,
                 validationWindow: this.openValidations[address].expireTime - this.now()
             };
         }
@@ -53,24 +58,22 @@ class Notary {
         let verified = bitcoinMessage.verify(message, address, signature);
 
         if (verified) {
-            this.verifiedAddresses[address] = true;
+            this.openValidations[address].verified = true;
         }
         return verified;
     }
 
     isVerified(address) {
-        if (this.verifiedAddresses[address]) return true;
-        else return false;
+        console.log(this.openValidations[address], '--')
+        return this.openValidations[address].verified;
     }
 
     clearValidation(address) {
-        delete this.verifiedAddresses[address];
-        delete this.openValidations[address];
+        this.openValidations[address].verified = false;
     }
 
     constructor() {
         this.openValidations = {};
-        this.verifiedAddresses = {};
         this.validationWindow = 300;
     }
 }

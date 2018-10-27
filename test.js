@@ -66,7 +66,6 @@ var testScenarios = {
             console.log(body);
             hash = body.hash;
             height = body.height;
-            console.log(height)
         });
     },
 
@@ -119,6 +118,8 @@ setTimeout(() => {
     testScenarios.registerNewStar();
 }, 3000);
 
+
+
 setTimeout(() => {
     testScenarios.searchByAddress();
 }, 4000);
@@ -130,3 +131,8 @@ setTimeout(() => {
 setTimeout(() => {
     testScenarios.searchByBlockHeight();
 }, 6000);
+
+setTimeout(() => {
+    console.log("===Attempt to register a star again===");
+    testScenarios.registerNewStar();
+}, 7000);
