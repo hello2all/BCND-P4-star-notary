@@ -89,12 +89,61 @@ class Blockchain{
     var blockHeight = parseInt(blockIndex);
     return db.get(blockHeight)
       .then(res => {
-        // return object as a single string
-        return JSON.parse(res);
+        let blockData = JSON.parse(res);
+        if (typeof blockData.body.address == "undefined") return blockData;
+        else {
+          let story = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
+          blockData.body.star.story = story;
+          return blockData;
+        }
+          
+        
       })
       .catch(e => {
         throw new Error("can't find the block");
       });
+  }
+
+  getAddress(address){
+    let stars = [];
+    return new Promise((resolve, reject) => {
+      db.createReadStream()
+      .on('data', function(data) {
+        let blockData = JSON.parse(data.value);
+        if (typeof blockData.body.address == "undefined") return;
+        if (blockData.body.address == address) {
+          let story = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
+          blockData.body.star.story = story;
+          stars.push(blockData);
+        }
+      })
+      .on('error', function(err) {
+          reject(err);
+      })
+      .on('close', () => {
+        resolve(stars);
+      });
+    });
+  }
+
+  getHash(hash){
+    return new Promise((resolve, reject) => {
+      db.createReadStream()
+      .on('data', function(data) {
+        let blockData = JSON.parse(data.value);
+        if (blockData.hash == hash) {
+          let story = new Buffer(blockData.body.star.story, 'hex').toString('utf8');
+          blockData.body.star.story = story;
+          resolve(blockData);
+        }
+      })
+      .on('error', function(err) {
+          reject(err);
+      })
+      .on('close', () => {
+        resolve(null);
+      });
+    });
   }
 
   // validate block
