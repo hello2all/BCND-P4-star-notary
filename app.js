@@ -74,6 +74,7 @@ app.post('/block', (req, res, next) => {
 });
 app.post('/requestValidation', (req, res, next) => {
     try {
+        if (typeof req.body.address == "undefined" || req.body.address == "") throw new Error("Invalid Address")
         let validationRequest = notary.registerValidationRequest(req.body.address);
         res.json({
             address: req.body.address,
